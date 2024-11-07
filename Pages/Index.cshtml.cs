@@ -1,19 +1,32 @@
-using Microsoft.AspNetCore.Mvc;
+using Azure.Data.Tables;
+using IBAS_kantine;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-
-namespace IBAS_kantine.Pages;
+using Microsoft.Extensions.Configuration;
 
 public class IndexModel : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
+    private readonly IConfiguration _configuration;
+    public List<MenuItem> MenuItems { get; set; } = new();
 
-    public IndexModel(ILogger<IndexModel> logger)
+    public IndexModel(IConfiguration configuration)
     {
-        _logger = logger;
+        _configuration = configuration;
     }
 
     public void OnGet()
     {
+        var connectionString = _configuration["AzureStorage:ConnectionString"];
+        var tableClient = new TableClient(connectionString, "WeeklyMenu");
 
+        foreach (var entity in tableClient.Query<TableEntity>())
+        {
+            var menuItem = new MenuItem
+            {
+                Day = entity.RowKey,
+                ColdDish = entity.GetString("ColdDish"),
+                WarmDish = entity.GetString("WarmDish")
+            };
+            MenuItems.Add(menuItem);
+        }
     }
 }
