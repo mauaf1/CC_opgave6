@@ -15,7 +15,7 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
-        var connectionString = _configuration["AzureStorage:ConnectionString"];
+        var connectionString = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
         var tableClient = new TableClient(connectionString, "WeeklyMenu");
 
         foreach (var entity in tableClient.Query<TableEntity>())
